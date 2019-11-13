@@ -4,25 +4,33 @@ import (
     "fmt"
     "strings"
     "os"
+    "log"
 )
 
 func main() {
+    // function that renames the files in current directory
+    // goes trough all the files, searches for the words after "file.Name()" in the replace method
+    // and replaces those words with whatever is in the next portion.
 
-    fmt.Println(os.Args[1:3])
-    // Example 1: Willkommen to GoLangCode.com
-    myText := string(os.Args[1:2])
-    myText = strings.Replace(myText, "[pseudo] ", "", -1)
-    fmt.Println(myText)
+    dirname := "."
 
-    // Example 2: Change first occurance
-    // Output: The car sounds sound
-    myText = "The sound sounds sound"
-    myText = strings.Replace(myText, "sound", "car", 1)
-    fmt.Println(myText)
+    f, err := os.Open(dirname)
+    if err != nil {
+        log.Fatal(err)
+    }
+    files, err := f.Readdir(-1)
+    
+    if err != nil {
+        log.Fatal(err)
+    }
 
-    // Example 3: Replacing quotes (double backslash needed)
-    // Output: I \'quote\' this text
-    myText = "I 'quote' this text"
-    myText = strings.Replace(myText, "'", "\\'", -1)
-    fmt.Println(myText)
+    for _, file := range files {
+        myText := strings.Replace(file.Name(), " [1080p] [h.265]", "", -1)
+        fmt.Println(myText)
+        //fmt.Println(file.Name())
+        os.Rename(file.Name(), myText)
+        f.WriteString(myText)
+    }
+
+    f.Close()
 }
