@@ -12,6 +12,8 @@ func execute() {
   monthTime := time.Now().Month()
   monthString := monthTime.String()
   monthShort := monthString[0:3]
+  EarliestTime := "08"
+  LatestTime := "16"
 
   out, err := exec.Command("whoami").Output()
   if err != nil {
@@ -27,20 +29,51 @@ func execute() {
 
   output2 := string(out2)
   words := strings.Fields(output2)
-  dates := make([]string, 0)
+  workingDays := make([]string, 0)
 
-  if(words[0] == user[0]){
-    for n := range words {
-      if(words[n] == monthShort){
-        // fmt.Println(words[n+1] + " " + monthString)
-        tmp := string(words[n+2])
-        time := string(tmp[0:2]) + ":00"
-        dates = append(dates, (words[n+1] + " " + monthString + " " + time))
+  for n := range words {
+    // check to retrieve current logged in users activity
+    if(words[n] == user[0]){
+      // retrieving values from current month
+      if(words[n+4] == monthShort){
+        date := words[n+5]
+        endTime := ""
+
+        if(words[n+7] != "-" || words[n+8] == "down"){ // ignoring when user is still logged in.
+          // endTime = words[n+7] + " " + words[n+8]
+          continue
+        } else{
+          endTime = words[n+8]
+        }
+        
+        startTime := words[n+6] // setting start time of workshift
+        
+        // time := startTime + " - " + endTime
+        // fmt.Println(date, monthString, time)
+
+
+        // checking if user logged in after worktime started or before
+        if(startTime[0:2] >= EarliestTime) {
+          startTime = startTime[0:2] + ":00"
+        } else {
+          startTime = EarliestTime + ":00"
+        }
+
+        // checking if user was still logged in when shift ended
+        if(endTime[0:2] <= LatestTime) {
+          endTime = endTime[0:2] + ":00"
+        } else {
+          endTime = LatestTime + ":00"
+        }
+
+        workTime := startTime + " - " + endTime
+
+        workingDays = append(workingDays, (date + " " + monthString + " " + workTime))
       }
     }
   }
 
-  workingDays := removeDuplicates(dates)
+  workingDays = removeDuplicates(workingDays)
 
   fmt.Println(workingDays)
 }
